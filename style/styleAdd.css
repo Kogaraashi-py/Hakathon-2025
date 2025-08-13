@@ -1,0 +1,20 @@
+.star {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.star:hover {
+    transform: scale(1.1);
+}
+.star.filled {
+    color: #fbbf24;
+}
+.star.empty {
+    color: #d1d5db;
+}
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
