@@ -73,10 +73,6 @@ function validatePasswords() {
     }
 }
 
-function showLogin() {
-    alert('Redirigiendo al formulario de login...');
-    // Aquí puedes agregar la lógica para redirigir al login
-}
 
 // Custom checkbox styling
 document.addEventListener('DOMContentLoaded', function() {
