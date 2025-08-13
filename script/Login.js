@@ -1,17 +1,14 @@
 // Import Login functionality (simulated)
 class LoginManager {
     constructor() {
-        this.apiUrl = '/api/login'; // URL de tu API
+        this.apiUrl = 'http://127.0.0.1:5000/login';
     }
 
     async authenticate(credentials) {
         try {
-            // Simular llamada a data/Login.js
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(credentials)
             });
 
@@ -20,30 +17,14 @@ class LoginManager {
             }
 
             const data = await response.json();
-            return data;
+            return data; // { success: true/false, user: {...} }
         } catch (error) {
-            // Simulación para demo - remover en producción
-            console.log('Simulating login for demo purposes');
-            
-            // Simular validación básica para demo
-            if (credentials.username === 'admin' && credentials.password === 'admin123') {
-                return { 
-                    success: true, 
-                    user: { username: credentials.username, name: 'Administrador' },
-                    token: 'demo-token-123'
-                };
-            } else if (credentials.username === 'usuario' && credentials.password === '123456') {
-                return { 
-                    success: true, 
-                    user: { username: credentials.username, name: 'Usuario Demo' },
-                    token: 'demo-token-456'
-                };
-            } else {
-                throw new Error('Nombre de usuario o contraseña incorrectos');
-            }
+            console.error('Error en login:', error);
+            throw error;
         }
     }
 }
+
 
 // Initialize login manager
 const loginManager = new LoginManager();
