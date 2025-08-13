@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/script/Detalles.js">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Cursos Recomendados</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Descubre los mejores cursos seleccionados especialmente para ti. 
+                Califica tu experiencia y ayuda a otros estudiantes.
+            </p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="mb-8 flex justify-center">
+            <div class="bg-white rounded-lg shadow-md p-4 flex gap-4 items-center">
+                <label for="ratingFilter" class="text-gray-700 font-medium">Filtrar por calificación:</label>
+                <select id="ratingFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Todas las calificaciones</option>
+                    <option value="5">5 estrellas</option>
+                    <option value="4">4+ estrellas</option>
+                    <option value="3">3+ estrellas</option>
+                    <option value="2">2+ estrellas</option>
+                    <option value="1">1+ estrellas</option>
+                </select>
+                <button id="resetFilter" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid de Cards -->
+        <div id="cursosContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Los cards se generarán aquí con JavaScript -->
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="mt-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Estadísticas de Cursos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div>
+                    <p class="text-3xl font-bold text-blue-600" id="totalCursos">0</p>
+                    <p class="text-gray-600">Total de Cursos</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-yellow-600" id="promedioCalificacion">0</p>
+                    <p class="text-gray-600">Calificación Promedio</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-green-600" id="cursosCalificados">0</p>
+                    <p class="text-gray-600">Cursos Calificados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script/Detalles.js"> </script>
+</body>
+</html>
