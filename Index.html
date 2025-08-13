@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Recomendación de Cursos Técnicos</title>
+    <title>CursoLink - Tu Puerta de Acceso a la Educación Técnica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'energy': '#10b981',
-                        'ai': '#3b82f6',
-                        'tech': '#8b5cf6'
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                        accent: '#10b981'
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'bounce-subtle': 'bounceSubtle 2s infinite'
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'bounce-gentle': 'bounceGentle 2s infinite',
+                        'float': 'float 3s ease-in-out infinite'
                     }
                 }
             }
@@ -25,241 +26,424 @@
     </script>
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes bounceSubtle {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-5px); }
-            60% { transform: translateY(-3px); }
+        @keyframes bounceGentle {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         }
         .card-hover {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-        .loading-spin {
-            animation: spin 1s linear infinite;
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #fbbf24;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .institution-card {
+            transition: all 0.3s ease;
+            filter: grayscale(20%);
+        }
+        .institution-card:hover {
+            filter: grayscale(0%);
+            transform: scale(1.05);
+        }
+        .course-platform {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .course-platform:hover {
+            border-left-color: #6366f1;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        }
+        #loginSection {
+            transform: translateX(100%);
+            transition: transform 0.4s ease;
+        }
+        #loginSection.show {
+            transform: translateX(0);
+        }
+        .quiz-modal {
+            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.7);
         }
     </style>
 </head>
 <body class="min-h-screen gradient-bg">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 text-white py-16 px-4">
-        <div class="container mx-auto text-center">
-            <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-fade-in">
-                🎓 Sistema de Recomendación
-            </h1>
-            <p class="text-xl md:text-2xl opacity-90 mb-8 animate-slide-up">
-                Encuentra cursos técnicos en Energía, IA y Tecnología personalizados para ti
-            </p>
+    <!-- Navegación Superior -->
+    <nav class="glass-effect fixed w-full top-0 z-50 py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-2xl">🎓</span>
+                </div>
+                <div class="text-white">
+                    <h1 class="text-xl font-bold">CursoLink</h1>
+                    <p class="text-xs opacity-80">Tu conexión educativa</p>
+                </div>
+            </div>
             
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 card-hover">
-                    <div class="text-2xl font-bold">{{ stats.total_courses }}</div>
-                    <div class="text-sm opacity-80">Cursos</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 card-hover">
-                    <div class="text-2xl font-bold">{{ stats.avg_rating }}</div>
-                    <div class="text-sm opacity-80">Rating Promedio</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 card-hover">
-                    <div class="text-2xl font-bold">{{ stats.avg_duration }}h</div>
-                    <div class="text-sm opacity-80">Duración Promedio</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 card-hover">
-                    <div class="text-2xl font-bold">{{ stats.total_ratings }}</div>
-                    <div class="text-sm opacity-80">Calificaciones</div>
+            <!-- Menu Principal -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#quienes-somos" class="nav-link text-white hover:text-yellow-400 font-medium">¿Quiénes Somos?</a>
+                <a href="#instituciones" class="nav-link text-white hover:text-yellow-400 font-medium">Instituciones</a>
+                <a href="#cursos-populares" class="nav-link text-white hover:text-yellow-400 font-medium">Cursos Populares</a>
+                <a href="#contacto" class="nav-link text-white hover:text-yellow-400 font-medium">Contacto</a>
+                <button onclick="openRecommendationQuiz()" class="nav-link bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-full font-semibold hover:from-yellow-500 hover:to-orange-600 transform hover:scale-105 shadow-lg">
+                    ¿No sabes qué elegir? 🤔
+                </button>
+            </div>
+            
+            <!-- Botón Iniciar Sesión -->
+            <button onclick="toggleLogin()" class="bg-white/20 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-all">
+                Iniciar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6 text-center text-white">
+        <div class="container mx-auto">
+            <div class="animate-fade-in">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                    Conectamos tu Futuro
+                    <span class="block text-4xl md:text-6xl mt-2">con la Educación</span>
+                </h1>
+                <p class="text-xl md:text-2xl opacity-90 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    Somos tu puerta de acceso a los mejores cursos técnicos. Te conectamos con instituciones líderes 
+                    y te ayudamos a encontrar el programa perfecto para tu crecimiento profesional.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button onclick="document.getElementById('instituciones').scrollIntoView({behavior: 'smooth'})" 
+                            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all shadow-xl">
+                        🚀 Explorar Instituciones
+                    </button>
+                    <button onclick="openRecommendationQuiz()" 
+                            class="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/30 transform hover:scale-105 transition-all border border-white/30">
+                        🎯 Recomiéndame un Curso
+                    </button>
                 </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-12">
-        <!-- Recommendation Form -->
-        <section class="bg-white rounded-2xl shadow-2xl p-8 mb-12 animate-slide-up">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
-                📝 Crea tu Perfil de Usuario
-            </h2>
-            
-            <form id="recommendationForm" class="space-y-6">
-                <!-- Form Grid -->
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Occupation -->
-                    <div class="space-y-2">
-                        <label for="occupation" class="block text-sm font-semibold text-gray-700">
-                            👔 Ocupación Actual
-                        </label>
-                        <select id="occupation" required 
-                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
-                            <option value="">Selecciona tu ocupación</option>
-                            <option value="Ingeniero Eléctrico">Ingeniero Eléctrico</option>
-                            <option value="Data Scientist">Data Scientist</option>
-                            <option value="Desarrollador Web">Desarrollador Web</option>
-                            <option value="Estudiante Ingeniería">Estudiante de Ingeniería</option>
-                            <option value="Consultor Energético">Consultor Energético</option>
-                            <option value="Ingeniero Industrial">Ingeniero Industrial</option>
-                            <option value="Analista de Datos">Analista de Datos</option>
-                            <option value="Desarrollador Software">Desarrollador de Software</option>
-                            <option value="Investigador">Investigador</option>
-                            <option value="Ingeniero de Sistemas">Ingeniero de Sistemas</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Experience Level -->
-                    <div class="space-y-2">
-                        <label for="experience" class="block text-sm font-semibold text-gray-700">
-                            📊 Nivel de Experiencia
-                        </label>
-                        <select id="experience" required 
-                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
-                            <option value="">Selecciona tu nivel</option>
-                            <option value="Principiante">🌱 Principiante</option>
-                            <option value="Intermedio">🚀 Intermedio</option>
-                            <option value="Avanzado">⭐ Avanzado</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Interests -->
-                <div class="space-y-2">
-                    <label for="interests" class="block text-sm font-semibold text-gray-700">
-                        💡 Intereses y Habilidades
-                    </label>
-                    <textarea id="interests" rows="4" required
-                              placeholder="Describe tus intereses separados por comas. Ej: machine learning, energía renovable, python, desarrollo web, análisis de datos, inteligencia artificial"
-                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all resize-none"></textarea>
-                </div>
-                
-                <!-- User ID (Optional) -->
-                <div class="space-y-2">
-                    <label for="userId" class="block text-sm font-semibold text-gray-700">
-                        🆔 ID de Usuario (Opcional)
-                    </label>
-                    <input type="number" id="userId" min="1" max="5"
-                           placeholder="Ingresa un número del 1 al 5 si eres usuario registrado"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
-                    <p class="text-xs text-gray-500">
-                        Para recomendaciones colaborativas basadas en usuarios similares
+    <!-- Sección: ¿Quiénes Somos? -->
+    <section id="quienes-somos" class="py-20 px-6">
+        <div class="container mx-auto">
+            <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-12 shadow-2xl animate-slide-up">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">¿Quiénes Somos? 🌟</h2>
+                    <p class="text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
+                        Somos <strong>CursoLink</strong>, la plataforma intermediaria que revoluciona el acceso a la educación técnica. 
+                        No creamos cursos, los conectamos contigo.
                     </p>
                 </div>
                 
-                <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                    <button type="submit" 
-                            class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
-                        🔍 Obtener Recomendaciones
-                    </button>
-                    <button type="button" onclick="showAllCourses()"
-                            class="flex-1 bg-gradient-to-r from-green-600 to-teal-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
-                        📚 Ver Catálogo Completo
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Loading State -->
-        <div id="loading" class="hidden">
-            <div class="bg-white rounded-2xl shadow-2xl p-12 text-center animate-fade-in">
-                <div class="loading-spin w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full mx-auto mb-6"></div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">⏳ Generando recomendaciones...</h3>
-                <p class="text-gray-600">Analizando tu perfil y preferencias con IA</p>
-            </div>
-        </div>
-
-        <!-- Results Container -->
-        <div id="results" class="hidden space-y-12">
-            <!-- Content-Based Recommendations -->
-            <section id="contentBasedSection" class="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in">
-                <div class="flex items-center mb-8">
-                    <div class="w-2 h-8 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full mr-4"></div>
-                    <h3 class="text-3xl font-bold text-gray-800">🎯 Recomendaciones Basadas en Contenido</h3>
-                </div>
-                <p class="text-gray-600 mb-8">Cursos seleccionados según tu perfil, intereses y nivel de experiencia</p>
-                <div id="contentBasedResults" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <!-- Collaborative Recommendations -->
-            <section id="collaborativeSection" class="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in hidden">
-                <div class="flex items-center mb-8">
-                    <div class="w-2 h-8 bg-gradient-to-b from-green-500 to-teal-500 rounded-full mr-4"></div>
-                    <h3 class="text-3xl font-bold text-gray-800">👥 Recomendaciones Colaborativas</h3>
-                </div>
-                <p class="text-gray-600 mb-8">Cursos recomendados basados en usuarios con perfiles similares al tuyo</p>
-                <div id="collaborativeResults" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <!-- All Courses Catalog -->
-            <section id="catalogSection" class="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in hidden">
-                <div class="flex items-center mb-8">
-                    <div class="w-2 h-8 bg-gradient-to-b from-orange-500 to-red-500 rounded-full mr-4"></div>
-                    <h3 class="text-3xl font-bold text-gray-800">📖 Catálogo Completo de Cursos</h3>
-                </div>
-                <p class="text-gray-600 mb-8">Explora todos nuestros cursos técnicos disponibles</p>
-                <div id="catalogResults" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-        </div>
-
-        <!-- Quick Access Categories -->
-        <section class="bg-white rounded-2xl shadow-2xl p-8 mt-12">
-            <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">🏷️ Explorar por Categorías</h3>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-xl p-6 card-hover cursor-pointer" onclick="filterByCategory('Energía')">
-                    <div class="text-3xl mb-3">⚡</div>
-                    <h4 class="text-lg font-bold text-green-800 mb-2">Energía</h4>
-                    <p class="text-green-600 text-sm">Renovables, almacenamiento, eficiencia energética</p>
-                    <div class="mt-4 text-xs text-green-700 font-semibold">{{ stats.categories.get('Energía', 0) }} cursos</div>
-                </div>
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-6 card-hover cursor-pointer" onclick="filterByCategory('IA')">
-                    <div class="text-3xl mb-3">🤖</div>
-                    <h4 class="text-lg font-bold text-blue-800 mb-2">Inteligencia Artificial</h4>
-                    <p class="text-blue-600 text-sm">Machine learning, deep learning, ciencia de datos</p>
-                    <div class="mt-4 text-xs text-blue-700 font-semibold">{{ stats.categories.get('IA', 0) }} cursos</div>
-                </div>
-                <div class="bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-200 rounded-xl p-6 card-hover cursor-pointer" onclick="filterByCategory('Tecnología')">
-                    <div class="text-3xl mb-3">💻</div>
-                    <h4 class="text-lg font-bold text-purple-800 mb-2">Tecnología</h4>
-                    <p class="text-purple-600 text-sm">Desarrollo web, ciberseguridad, cloud computing</p>
-                    <div class="mt-4 text-xs text-purple-700 font-semibold">{{ stats.categories.get('Tecnología', 0) }} cursos</div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12 mt-16">
-        <div class="container mx-auto px-4 text-center">
-            <h4 class="text-2xl font-bold mb-4">Sistema de Recomendación Inteligente</h4>
-            <p class="text-gray-400 mb-6">Potenciado por algoritmos de Machine Learning y filtrado colaborativo</p>
-            <div class="flex justify-center space-x-8 text-sm">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce-subtle"></div>
-                    <span>TF-IDF + Similitud Coseno</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce-subtle" style="animation-delay: 0.2s;"></div>
-                    <span>SVD Colaborativo</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce-subtle" style="animation-delay: 0.4s;"></div>
-                    <span>Sistema Híbrido</span>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center p-6 bg-white/10 rounded-2xl card-hover">
+                        <div class="text-5xl mb-4 animate-float">🔗</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Conectamos</h3>
+                        <p class="text-white/80">Te enlazamos directamente con las mejores instituciones educativas del mundo</p>
+                    </div>
+                    <div class="text-center p-6 bg-white/10 rounded-2xl card-hover">
+                        <div class="text-5xl mb-4 animate-float" style="animation-delay: 0.5s">🎯</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Recomendamos</h3>
+                        <p class="text-white/80">Usamos IA para sugerirte cursos perfectos según tu perfil y objetivos</p>
+                    </div>
+                    <div class="text-center p-6 bg-white/10 rounded-2xl card-hover">
+                        <div class="text-5xl mb-4 animate-float" style="animation-delay: 1s">⚡</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Agilizamos</h3>
+                        <p class="text-white/80">Simplificamos tu búsqueda educativa en una sola plataforma intuitiva</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </footer>
+    </section>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-</html>
+    <!-- Galería de Instituciones Asociadas -->
+    <section id="instituciones" class="py-20 px-6">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Nuestras Instituciones Aliadas 🤝</h2>
+                <p class="text-xl text-white/90 max-w-3xl mx-auto">
+                    Colaboramos con las instituciones más prestigiosas para ofrecerte acceso directo a educación de calidad mundial
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <!-- SENA -->
+                <div class="bg-white rounded-2xl p-8 shadow-2xl institution-card">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-4xl">🏛️</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">SENA</h3>
+                        <p class="text-green-600 font-semibold mb-3">Servicio Nacional de Aprendizaje</p>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Formación técnica y tecnológica gratuita, reconocida por su calidad y pertinencia laboral en Colombia
+                        </p>
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">Técnico</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">Tecnólogo</span>
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs">Gratuito</span>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600">47+ Cursos</div>
+                    </div>
+                </div>
+                
+                <!-- Cisco -->
+                <div class="bg-white rounded-2xl p-8 shadow-2xl institution-card">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-4xl">🌐</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Cisco Networking</h3>
+                        <p class="text-blue-600 font-semibold mb-3">Academy Program</p>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Certificaciones mundiales en redes, ciberseguridad y tecnologías emergentes directamente de Cisco
+                        </p>
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">Redes</span>
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs">Seguridad</span>
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs">IoT</span>
+                        </div>
+                        <div class="text-2xl font-bold text-blue-600">23+ Cursos</div>
+                    </div>
+                </div>
+                
+                <!-- Udemy -->
+                <div class="bg-white rounded-2xl p-8 shadow-2xl institution-card">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-4xl">🎬</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Udemy</h3>
+                        <p class="text-purple-600 font-semibold mb-3">Global Learning Platform</p>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Miles de cursos actualizados en tecnología, desarrollo personal y habilidades profesionales
+                        </p>
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs">Desarrollo</span>
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs">Diseño</span>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">Marketing</span>
+                        </div>
+                        <div class="text-2xl font-bold text-purple-600">150+ Cursos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-white">
+                        <div class="text-3xl font-bold">220+</div>
+                        <div class="text-sm opacity-80">Cursos Disponibles</div>
+                    </div>
+                    <div class="text-white">
+                        <div class="text-3xl font-bold">3</div>
+                        <div class="text-sm opacity-80">Instituciones Aliadas</div>
+                    </div>
+                    <div class="text-white">
+                        <div class="text-3xl font-bold">15+</div>
+                        <div class="text-sm opacity-80">Áreas de Conocimiento</div>
+                    </div>
+                    <div class="text-white">
+                        <div class="text-3xl font-bold">98%</div>
+                        <div class="text-sm opacity-80">Satisfacción</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cursos Más Populares -->
+    <section id="cursos-populares" class="py-20 px-6">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Los Cursos Más Populares 🔥</h2>
+                <p class="text-xl text-white/90 max-w-3xl mx-auto">
+                    Descubre los cursos más demandados en cada una de nuestras plataformas aliadas
+                </p>
+            </div>
+            
+            <!-- SENA Courses -->
+            <div class="course-platform bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                        <span class="text-2xl">🏛️</span>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Cursos Destacados SENA</h3>
+                        <p class="text-white/80">Formación técnica gratuita de alta calidad</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('sena', 'desarrollo-software')">
+                        <div class="w-full h-40 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">💻</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Desarrollo de Software</h4>
+                        <p class="text-gray-600 text-sm mb-3">Aprende a desarrollar aplicaciones web y móviles con las tecnologías más demandadas del mercado.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Gratuito</span>
+                            <span class="text-yellow-500">⭐ 4.8</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('sena', 'electronica')">
+                        <div class="w-full h-40 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">⚡</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Electrónica Industrial</h4>
+                        <p class="text-gray-600 text-sm mb-3">Especialízate en sistemas electrónicos industriales y automatización de procesos.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Gratuito</span>
+                            <span class="text-yellow-500">⭐ 4.7</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('sena', 'logistica')">
+                        <div class="w-full h-40 bg-gradient-to-br from-yellow-400 to-red-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">📦</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Logística Empresarial</h4>
+                        <p class="text-gray-600 text-sm mb-3">Optimiza cadenas de suministro y procesos logísticos en empresas modernas.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Gratuito</span>
+                            <span class="text-yellow-500">⭐ 4.6</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cisco Courses -->
+            <div class="course-platform bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                        <span class="text-2xl">🌐</span>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Certificaciones Cisco</h3>
+                        <p class="text-white/80">Certificaciones reconocidas mundialmente</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('cisco', 'ccna')">
+                        <div class="w-full h-40 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">🔗</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">CCNA Routing & Switching</h4>
+                        <p class="text-gray-600 text-sm mb-3">Fundamentos de redes, configuración de routers y switches Cisco.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Certificación</span>
+                            <span class="text-yellow-500">⭐ 4.9</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('cisco', 'cybersecurity')">
+                        <div class="w-full h-40 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">🛡️</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Cybersecurity Essentials</h4>
+                        <p class="text-gray-600 text-sm mb-3">Fundamentos de ciberseguridad y protección de infraestructuras críticas.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Seguridad</span>
+                            <span class="text-yellow-500">⭐ 4.8</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('cisco', 'iot')">
+                        <div class="w-full h-40 bg-gradient-to-br from-green-400 to-teal-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">📡</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Introduction to IoT</h4>
+                        <p class="text-gray-600 text-sm mb-3">Internet de las Cosas: conectividad inteligente y ciudades inteligentes.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">IoT</span>
+                            <span class="text-yellow-500">⭐ 4.7</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Udemy Courses -->
+            <div class="course-platform bg-white/10 backdrop-blur-lg rounded-2xl p-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                        <span class="text-2xl">🎬</span>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Top Cursos Udemy</h3>
+                        <p class="text-white/80">Los más vendidos y mejor valorados</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('udemy', 'python')">
+                        <div class="w-full h-40 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">🐍</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">Python Bootcamp Completo</h4>
+                        <p class="text-gray-600 text-sm mb-3">De cero a experto en Python: desarrollo web, ciencia de datos y automatización.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">$89.99</span>
+                            <span class="text-yellow-500">⭐ 4.9</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('udemy', 'react')">
+                        <div class="w-full h-40 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">⚛️</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">React - Guía Completa</h4>
+                        <p class="text-gray-600 text-sm mb-3">Desarrollo de aplicaciones web modernas con React, Redux y Node.js.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">$79.99</span>
+                            <span class="text-yellow-500">⭐ 4.8</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('udemy', 'machine-learning')">
+                        <div class="w-full h-40 bg-gradient-to-br from-pink-400 to-purple-500 rounded-lg mb-4 flex items-center justify-center">
+                            <span class="text-4xl text-white">🤖</span>
