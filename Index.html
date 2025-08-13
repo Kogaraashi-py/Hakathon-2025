@@ -153,10 +153,7 @@
                     y te ayudamos a encontrar el programa perfecto para tu crecimiento profesional.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <button onclick="document.getElementById('instituciones').scrollIntoView({behavior: 'smooth'})" 
-                            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all shadow-xl">
-                        🚀 Explorar Instituciones
-                    </button>
+                   
                     <button onclick="openRecommendationQuiz()" 
                             class="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/30 transform hover:scale-105 transition-all border border-white/30">
                         🎯 Recomiéndame un Curso
@@ -447,3 +444,90 @@
                     <div class="bg-white rounded-xl p-6 card-hover cursor-pointer" onclick="redirectToCourse('udemy', 'machine-learning')">
                         <div class="w-full h-40 bg-gradient-to-br from-pink-400 to-purple-500 rounded-lg mb-4 flex items-center justify-center">
                             <span class="text-4xl text-white">🤖</span>
+    <!-- SCRIPTS: integración del quiz, postMessage y utilidades -->
+    <script>
+        // Abre la pestaña con el quiz (ajusta ruta si la guardas en otra carpeta)
+        function openRecommendationQuiz() {
+            const url = "recommendation-quiz.html";
+            // abrir nueva pestaña de forma segura
+            const win = window.open(url, "noopener");
+            if (!win) {
+                // fallback: abrir en la misma pestaña si bloqueo de popups
+                window.location.href = url;
+            }
+        }
+
+        // Listener: recibe el resultado desde la pestaña del quiz
+        window.addEventListener("message", (ev) => {
+            // En producción valida ev.origin !== 'null' y que sea tu dominio
+            try {
+                const msg = ev.data;
+                if (msg && msg.type === "rec_quiz_complete") {
+                    console.log("Respuestas recibidas del quiz:", msg.data);
+
+                    // --- EJEMPLO: guardar localmente (opcional) ---
+                    const key = 'rec_quiz_results';
+                    const prev = JSON.parse(localStorage.getItem(key) || '[]');
+                    prev.push(msg.data);
+                    localStorage.setItem(key, JSON.stringify(prev));
+
+                    // --- EJEMPLO: enviar al backend para procesar/guardar feedback ---
+                    // fetch('/api/rec-quiz', {
+                    //   method: 'POST',
+                    //   headers: {'Content-Type': 'application/json'},
+                    //   body: JSON.stringify(msg.data)
+                    // }).then(r => console.log('Enviado al backend', r));
+
+                    // Mostrar una notificación visual rápida (toast simple)
+                    showToast('Gracias — tus respuestas fueron guardadas. ¡Te avisaremos cuando haya recomendaciones!');
+                }
+            } catch (e) {
+                console.warn("Mensaje inválido", e);
+            }
+        });
+
+        // Pequeña función toast (visual rápido)
+        function showToast(text) {
+            const t = document.createElement('div');
+            t.textContent = text;
+            t.style.position = 'fixed';
+            t.style.right = '20px';
+            t.style.bottom = '20px';
+            t.style.background = 'rgba(0,0,0,0.75)';
+            t.style.color = 'white';
+            t.style.padding = '12px 16px';
+            t.style.borderRadius = '10px';
+            t.style.zIndex = 9999;
+            t.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
+            document.body.appendChild(t);
+            setTimeout(()=> t.remove(), 3500);
+        }
+
+        // Función stub: redirige a un curso (ajusta según tu enrutamiento)
+        function redirectToCourse(provider, slug) {
+            // Ejemplo simple: podrías construir rutas distintas por proveedor
+            // o abrir enlaces externos reales.
+            console.log('redirectToCourse', provider, slug);
+            // Demo: abrir una URL construida (modifica según tus rutas reales)
+            const urlMap = {
+                sena: '/instituciones/sena/' + slug,
+                cisco: '/instituciones/cisco/' + slug,
+                udemy: '/instituciones/udemy/' + slug
+            };
+            const url = urlMap[provider] || '/';
+            window.location.href = url;
+        }
+
+        // Función stub: toggle login panel
+        function toggleLogin() {
+            const el = document.getElementById('loginSection');
+            if (!el) {
+                // si no existe, mostramos un pequeño alert demo
+                showToast('Abrir panel de inicio de sesión (implementa tu UI)');
+                return;
+            }
+            el.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

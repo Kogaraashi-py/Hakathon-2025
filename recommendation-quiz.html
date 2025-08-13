@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cuestionario de Recomendación</title>
+
+  <!-- Tailwind CDN (válido para desarrollo / prototipo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* pequeño ajuste para pasos */
+    .step { display: none; }
+    .step.active { display: block; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6">
+    <h1 class="text-2xl font-bold mb-2">¿No sabes qué elegir? — Cuestionario rápido</h1>
+    <p class="text-sm text-gray-500 mb-6">Responde 6 preguntas rápidas para que luego te recomiende cursos.</p>
+
+    <form id="quizForm" class="space-y-6">
+
+      <!-- Paso 1: consulta libre -->
+      <div class="step active" data-step="1">
+        <label class="block font-semibold">1. ¿Qué quieres aprender? (escribe en pocas palabras)</label>
+        <input id="text_query" name="text_query" type="text" placeholder="ej. APIs con Python" class="mt-2 w-full border rounded px-3 py-2" />
+        <p class="text-sm text-gray-400 mt-1">También marcá intereses abajo si quieres.</p>
+      </div>
+
+      <!-- Paso 2: intereses -->
+      <div class="step" data-step="2">
+        <label class="block font-semibold">2. Intereses (elige los que apliquen)</label>
+        <div class="mt-2 grid grid-cols-2 gap-2">
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="python" class="mr-2"> Python
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="web" class="mr-2"> Web
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="ml" class="mr-2"> Machine Learning
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="cloud" class="mr-2"> Cloud / DevOps
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="mobile" class="mr-2"> Mobile
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="checkbox" name="interests" value="data" class="mr-2"> Data / BI
+          </label>
+        </div>
+      </div>
+
+      <!-- Paso 3: nivel -->
+      <div class="step" data-step="3">
+        <label class="block font-semibold">3. ¿Cuál es tu nivel actual?</label>
+        <select id="level" name="level" class="mt-2 w-full border rounded px-3 py-2">
+          <option value="beginner">Principiante</option>
+          <option value="intermediate">Intermedio</option>
+          <option value="advanced">Avanzado</option>
+        </select>
+      </div>
+
+      <!-- Paso 4: tiempo -->
+      <div class="step" data-step="4">
+        <label class="block font-semibold">4. ¿Cuánto tiempo puedes dedicar por semana? (horas)</label>
+        <input id="time_per_week" name="time_per_week" type="number" min="0" step="1" value="5" class="mt-2 w-full border rounded px-3 py-2" />
+      </div>
+
+      <!-- Paso 5: idioma / presupuesto -->
+      <div class="step" data-step="5">
+        <label class="block font-semibold">5. Preferencias</label>
+        <div class="mt-3 grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Idioma</label>
+            <select id="preferred_language" name="preferred_language" class="mt-1 w-full border rounded px-3 py-2">
+              <option value="no_importa">No importa</option>
+              <option value="es">Español</option>
+              <option value="en">Inglés</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Presupuesto</label>
+            <select id="budget" name="budget" class="mt-1 w-full border rounded px-3 py-2">
+              <option value="free">Gratis</option>
+              <option value="paid">Pago</option>
+              <option value="no_importa">No importa</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 6: estilo / certificación -->
+      <div class="step" data-step="6">
+        <label class="block font-semibold">6. ¿Qué estilo prefieres?</label>
+        <div class="mt-2 grid grid-cols-1 gap-2">
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="radio" name="learning_style" value="hands_on" class="mr-2" checked> Hands-on / Práctico
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="radio" name="learning_style" value="theoretical" class="mr-2"> Teórico
+          </label>
+          <label class="inline-flex items-center p-2 bg-gray-100 rounded">
+            <input type="radio" name="learning_style" value="project" class="mr-2"> Centrado en proyecto
+          </label>
+        </div>
+
+        <label class="block font-semibold mt-4">¿Quieres certificación?</label>
+        <div class="mt-2">
+          <label class="inline-flex items-center mr-4">
+            <input type="radio" name="wants_certificate" value="yes" class="mr-2"> Sí
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="wants_certificate" value="no" class="mr-2" checked> No
+          </label>
+        </div>
+      </div>
+
+      <!-- Navegación de pasos -->
+      <div class="flex items-center justify-between">
+        <button type="button" id="prevBtn" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Anterior</button>
+        <div class="space-x-2">
+          <button type="button" id="nextBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:scale-105">Siguiente</button>
+          <button type="submit" id="submitBtn" class="px-4 py-2 bg-green-600 text-white rounded hidden">Finalizar</button>
+        </div>
+      </div>
+
+    </form>
+
+    <div id="result" class="mt-6 hidden">
+      <h2 class="text-lg font-semibold">¡Gracias! Guardamos tus respuestas.</h2>
+      <p class="text-sm text-gray-500">Cuando estés listo, te avisaré para generar las recomendaciones con IA.</p>
+    </div>
+
+  </div>
+
+  <script>
+    // Manejo de pasos
+    const steps = Array.from(document.querySelectorAll('.step'));
+    let currentStep = 0;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('quizForm');
+    const resultDiv = document.getElementById('result');
+
+    function showStep(i) {
+      steps.forEach((s, idx) => s.classList.toggle('active', idx === i));
+      currentStep = i;
+      prevBtn.style.display = i === 0 ? 'none' : 'inline-block';
+      nextBtn.style.display = i === steps.length - 1 ? 'none' : 'inline-block';
+      submitBtn.classList.toggle('hidden', i !== steps.length - 1);
+    }
+    showStep(0);
+
+    prevBtn.addEventListener('click', () => showStep(Math.max(0, currentStep - 1)));
+    nextBtn.addEventListener('click', () => showStep(Math.min(steps.length - 1, currentStep + 1)));
+
+    // Recoger respuestas simples
+    function collectAnswers() {
+      const formData = new FormData(form);
+      const answers = {};
+      answers.text_query = (formData.get('text_query') || '').trim();
+
+      // interests (varias)
+      answers.interests = [];
+      form.querySelectorAll('input[name="interests"]:checked').forEach(el => answers.interests.push(el.value));
+
+      answers.level = formData.get('level') || 'beginner';
+      answers.time_per_week = Number(formData.get('time_per_week') || 0);
+      answers.preferred_language = formData.get('preferred_language') || 'no_importa';
+      answers.budget = formData.get('budget') || 'no_importa';
+      answers.learning_style = formData.get('learning_style') || 'hands_on';
+      answers.wants_certificate = formData.get('wants_certificate') || 'no';
+      answers.timestamp = new Date().toISOString();
+      return answers;
+    }
+
+    // Guardar en localStorage y enviar mensaje al opener
+    function saveAndSend(answers) {
+      // Guardar en localStorage (para feedback loop / historial de usuario)
+      const key = 'rec_quiz_response_v1';
+      const prev = JSON.parse(localStorage.getItem(key) || '[]');
+      prev.push(answers);
+      localStorage.setItem(key, JSON.stringify(prev));
+
+      // Enviar al opener (si existe)
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'rec_quiz_complete', data: answers }, '*');
+        }
+      } catch (e) {
+        console.warn('No se pudo enviar postMessage al opener', e);
+      }
+    }
+
+    // Submit
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const answers = collectAnswers();
+      saveAndSend(answers);
+
+      // mostrar mensaje de éxito en esta pestaña
+      form.classList.add('hidden');
+      resultDiv.classList.remove('hidden');
+
+      // opcional: cerrar la pestaña automáticamente después de 1.5s
+      setTimeout(() => {
+        try { window.close(); } catch (e) {}
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
