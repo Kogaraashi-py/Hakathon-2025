@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Recomendación SENA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sena-orange': '#FF6B35',
+                        'sena-blue': '#004AAD',
+                        'sena-green': '#00A859'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-sena-orange">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-sena-blue rounded-full flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-sena-blue">Sistema de Recomendación SENA</h1>
+                        <p class="text-gray-600 text-sm">Encuentra cursos técnicos según tus intereses</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <div id="status-indicator" class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-600">Conectando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Form Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 animate-fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">¿Qué te gustaría aprender?</h2>
+                <p class="text-gray-600">Cuéntanos tus intereses y te recomendaremos los mejores cursos SENA</p>
+            </div>
+
+            <form id="recommendation-form" class="space-y-6">
+                <!-- Interests Input -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-lightbulb text-sena-orange mr-2"></i>
+                        Tus intereses y áreas de estudio
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="interests-input" 
+                            placeholder="Ej: programación, inteligencia artificial, energía renovable..."
+                            class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-sena-blue focus:ring-2 focus:ring-sena-blue focus:ring-opacity-20 transition-all duration-200"
+                        >
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div id="interests-tags" class="flex flex-wrap gap-2 mt-3"></div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Separa tus intereses con comas y presiona Enter para agregar
+                    </p>
+                </div>
+
+                <!-- Region Filter -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            <i class="fas fa-map-marker-alt text-sena-green mr-2"></i>
+                            Región preferida (opcional)
+                        </label>
+                        <select 
+                            id="region-select" 
+                            class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-sena-blue focus:ring-2 focus:ring-sena-blue focus:ring-opacity-20 transition-all duration-200"
+                        >
+                            <option value="">Todas las regiones</option>
+                        </select>
+                    </div>
+
+                    <!-- Number of Recommendations -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            <i class="fas fa-list-ol text-sena-orange mr-2"></i>
+                            Número de recomendaciones
+                        </label>
+                        <select 
+                            id="num-recommendations" 
+                            class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-sena-blue focus:ring-2 focus:ring-sena-blue focus:ring-opacity-20 transition-all duration-200"
+                        >
+                            <option value="3">3 cursos</option>
+                            <option value="5" selected>5 cursos</option>
+                            <option value="8">8 cursos</option>
+                            <option value="10">10 cursos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button 
+                        type="submit" 
+                        id="search-btn"
+                        class="bg-gradient-to-r from-sena-blue to-sena-orange text-white font-bold py-4 px-8 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fas fa-search mr-2"></i>
+                        Buscar Recomendaciones
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading Section -->
+        <div id="loading-section" class="hidden text-center py-12">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-sena-blue mx-auto mb-4"></div>
+            <p class="text-lg text-gray-600">Analizando tus intereses y buscando los mejores cursos...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-trophy text-sena-orange mr-2"></i>
+                        Cursos Recomendados
+                    </h3>
+                    <div id="results-count" class="bg-sena-blue text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        0 resultados
+                    </div>
+                </div>
+                
+                <div id="recommendations-container" class="space-y-6">
+                    <!-- Las recomendaciones se cargarán aquí dinámicamente -->
+                </div>
+
+                <!-- New Search Button -->
+                <div class="text-center mt-8">
+                    <button 
+                        id="new-search-btn"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                        <i class="fas fa-redo mr-2"></i>
+                        Nueva Búsqueda
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="error-section" class="hidden">
+            <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center animate-fade-in">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-red-700 mb-2">Error en la búsqueda</h3>
+                <p id="error-message" class="text-red-600 mb-4"></p>
+                <button 
+                    id="retry-btn"
+                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                    <i class="fas fa-redo mr-2"></i>
+                    Intentar de nuevo
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-sena-blue text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <i class="fas fa-graduation-cap text-2xl"></i>
+                <span class="text-xl font-bold">SENA</span>
+            </div>
+            <p class="text-blue-100">Sistema Inteligente de Recomendación de Cursos Técnicos</p>
+            <p class="text-blue-200 text-sm mt-2">Desarrollado con ❤️ para estudiantes colombianos</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
