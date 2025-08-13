@@ -1,434 +1,480 @@
-class SENARecommendationApp {
-        constructor() {
-            this.interests = [];
-            this.apiBase = "C:\Users\kevin\Downloads\iar_6_dataset_2_recomendador.csv";
-            this.init();
-        }
+// Configuración y variables globales
+let allCourses = [];
+let currentRecommendations = null;
 
-        init() {
-            this.setupEventListeners();
-            this.checkSystemStatus();
-            this.loadRegions();
-        }
+// Inicialización al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    loadAllCourses();
+});
 
-        setupEventListeners() {
-            // Form submission
-            document.getElementById('recommendation-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.searchRecommendations();
-            });
-
-            // Interests input
-            const interestsInput = document.getElementById('interests-input');
-            interestsInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.addInterest(e.target.value);
-                    e.target.value = '';
-                }
-            });
-
-            interestsInput.addEventListener('blur', (e) => {
-                if (e.target.value.trim()) {
-                    this.addInterest(e.target.value);
-                    e.target.value = '';
-                }
-            });
-
-            // Buttons
-            document.getElementById('new-search-btn').addEventListener('click', () => {
-                this.resetForm();
-            });
-
-            document.getElementById('retry-btn').addEventListener('click', () => {
-                this.hideError();
-                this.checkSystemStatus();
-            });
-        }
-
-        async checkSystemStatus() {
-            try {
-                const response = await fetch(`${this.apiBase}/api/status`);
-                const data = await response.json();
-                
-                const indicator = document.getElementById('status-indicator');
-                if (data.status === 'ok') {
-                    indicator.innerHTML = `
-                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span class="text-sm text-green-600">Sistema listo (${data.total_courses} cursos)</span>
-                    `;
-                } else {
-                    throw new Error('Sistema no disponible');
-                }
-            } catch (error) {
-                const indicator = document.getElementById('status-indicator');
-                indicator.innerHTML = `
-                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                    <span class="text-sm text-red-600">Sistema no disponible</span>
-                `;
-                console.error('Error checking status:', error);
-            }
-        }
-
-        async loadRegions() {
-            try {
-                const response = await fetch(`${this.apiBase}/api/regions`);
-                const data = await response.json();
-                
-                const select = document.getElementById('region-select');
-                data.regions.forEach(region => {
-                    const option = document.createElement('option');
-                    option.value = region;
-                    option.textContent = region;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading regions:', error);
-            }
-        }
-
-        addInterest(text) {
-            const interests = text.split(',').map(i => i.trim()).filter(i => i);
-            
-            interests.forEach(interest => {
-                if (!this.interests.includes(interest) && interest.length > 2) {
-                    this.interests.push(interest);
-                    this.renderInterestTag(interest);
-                }
-            });
-        }
-
-        renderInterestTag(interest) {
-            const tagsContainer = document.getElementById('interests-tags');
-            
-            const tag = document.createElement('span');
-            tag.className = 'bg-sena-blue text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2 animate-fade-in';
-            tag.innerHTML = `
-                <span>${interest}</span>
-                <button onclick="this.parentElement.remove(); app.removeInterest('${interest}')" class="ml-2 text-white hover:text-red-200">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            tagsContainer.appendChild(tag);
-        }
-
-        removeInterest(interest) {
-            this.interests = this.interests.filter(i => i !== interest);
-        }
-
-        async searchRecommendations() {
-            if (this.interests.length === 0) {
-                this.showError('Por favor, agrega al menos un interés para buscar recomendaciones.');
-                return;
-            }
-
-            this.showLoading();
-
-            try {
-                const region = document.getElementById('region-select').value;
-                const numRecommendations = parseInt(document.getElementById('num-recommendations').value);
-
-                const requestData = {
-                    interests: this.interests,
-                    region: region || null,
-                    num_recommendations: numRecommendations
-                };
-
-                const response = await fetch(`${this.apiBase}/api/recommend`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    this.showResults(data.recommendations);
-                } else {
-                    throw new Error(data.error || 'Error desconocido');
-                }
-
-            } catch (error) {
-                console.error('Search error:', error);
-                this.showError(`Error al buscar recomendaciones: ${error.message}`);
-            }
-        }
-
-        showLoading() {
-            document.getElementById('loading-section').classList.remove('hidden');
-            document.getElementById('results-section').classList.add('hidden');
-            document.getElementById('error-section').classList.add('hidden');
-            document.getElementById('search-btn').disabled = true;
-        }
-
-        hideLoading() {
-            document.getElementById('loading-section').classList.add('hidden');
-            document.getElementById('search-btn').disabled = false;
-        }
-
-        showResults(recommendations) {
-            this.hideLoading();
-            
-            const resultsSection = document.getElementById('results-section');
-            const container = document.getElementById('recommendations-container');
-            const countElement = document.getElementById('results-count');
-            
-            // Update count
-            countElement.textContent = `${recommendations.length} resultado${recommendations.length !== 1 ? 's' : ''}`;
-            
-            // Clear previous results
-            container.innerHTML = '';
-            
-            if (recommendations.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-search text-gray-400 text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron cursos</h3>
-                        <p class="text-gray-500">Intenta con otros intereses o amplía la búsqueda sin filtro de región</p>
-                    </div>
-                `;
-            } else {
-                recommendations.forEach((rec, index) => {
-                    const courseCard = this.createCourseCard(rec, index + 1);
-                    container.appendChild(courseCard);
-                });
-            }
-            
-            resultsSection.classList.remove('hidden');
-            resultsSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        createCourseCard(recommendation, position) {
-            const course = recommendation.course;
-            const similarity = (recommendation.similarity * 100).toFixed(1);
-            
-            const card = document.createElement('div');
-            card.className = 'bg-gradient-to-r from-white to-blue-50 rounded-xl p-6 border-l-4 border-sena-orange hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1';
-            
-            // Determine similarity color
-            let similarityColor = 'text-red-500';
-            if (similarity >= 70) similarityColor = 'text-green-500';
-            else if (similarity >= 50) similarityColor = 'text-yellow-500';
-            
-            // Create description preview
-            let description = course.description || 'Descripción no disponible';
-            if (description.length > 200) {
-                description = description.substring(0, 200) + '...';
-            }
-
-            card.innerHTML = `
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-sena-blue text-white rounded-full flex items-center justify-center font-bold text-lg">
-                            ${position}
-                        </div>
-                        <div>
-                            <span class="text-sm text-gray-500">Coincidencia</span>
-                            <div class="font-bold ${similarityColor}">${similarity}%</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="bg-sena-green text-white text-xs px-2 py-1 rounded-full">
-                            ${course.area || 'Sin categoría'}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h4 class="text-xl font-bold text-gray-800 mb-2 leading-tight">
-                        <i class="fas fa-book text-sena-orange mr-2"></i>
-                        ${course.name || 'Curso sin nombre'}
-                    </h4>
-                    <p class="text-gray-600 leading-relaxed">${description}</p>
-                </div>
-                
-                <div class="grid md:grid-cols-3 gap-4 text-sm">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-map-marker-alt text-sena-green"></i>
-                        <span class="text-gray-700">
-                            <strong>Región:</strong> ${course.region || 'No especificada'}
-                        </span>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-clock text-sena-orange"></i>
-                        <span class="text-gray-700">
-                            <strong>Duración:</strong> ${course.duration || 'No especificada'}
-                        </span>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-graduation-cap text-sena-blue"></i>
-                        <span class="text-gray-700">
-                            <strong>Nivel:</strong> ${course.level || 'No especificado'}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="mt-6 pt-4 border-t border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-lightbulb mr-1"></i>
-                            Recomendado para tus intereses
-                        </div>
-                        <button 
-                            onclick="app.showCourseDetails(${recommendation.index})"
-                            class="bg-sena-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
-                        >
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Ver detalles
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
-
-        async showCourseDetails(courseIndex) {
-            try {
-                const response = await fetch(`${this.apiBase}/api/course/${courseIndex}`);
-                const data = await response.json();
-                
-                if (data.course) {
-                    this.showModal(data.course);
-                }
-            } catch (error) {
-                console.error('Error loading course details:', error);
-                this.showError('Error al cargar detalles del curso');
-            }
-        }
-
-        showModal(course) {
-            // Create modal overlay
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in';
-            
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl max-w-2xl w-full max-h-90vh overflow-y-auto animate-slide-up">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Detalles del Curso</h3>
-                            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <h4 class="font-bold text-lg text-sena-blue mb-2">
-                                    <i class="fas fa-book mr-2"></i>
-                                    ${course.name || 'Curso sin nombre'}
-                                </h4>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Descripción:</label>
-                                <p class="text-gray-600 leading-relaxed">${course.description || 'No disponible'}</p>
-                            </div>
-                            
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                                        <i class="fas fa-tag text-sena-green mr-1"></i>
-                                        Área:
-                                    </label>
-                                    <p class="text-gray-600">${course.area || 'No especificada'}</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                                        <i class="fas fa-map-marker-alt text-sena-orange mr-1"></i>
-                                        Región:
-                                    </label>
-                                    <p class="text-gray-600">${course.region || 'No especificada'}</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                                        <i class="fas fa-clock text-sena-blue mr-1"></i>
-                                        Duración:
-                                    </label>
-                                    <p class="text-gray-600">${course.duration || 'No especificada'}</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                                        <i class="fas fa-graduation-cap text-sena-green mr-1"></i>
-                                        Nivel:
-                                    </label>
-                                    <p class="text-gray-600">${course.level || 'No especificado'}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-8 flex justify-end space-x-4">
-                            <button 
-                                onclick="this.closest('.fixed').remove()" 
-                                class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors duration-200"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close modal when clicking overlay
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        showError(message) {
-            this.hideLoading();
-            
-            const errorSection = document.getElementById('error-section');
-            const errorMessage = document.getElementById('error-message');
-            
-            errorMessage.textContent = message;
-            errorSection.classList.remove('hidden');
-            errorSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        hideError() {
-            document.getElementById('error-section').classList.add('hidden');
-        }
-
-        resetForm() {
-            this.interests = [];
-            document.getElementById('interests-tags').innerHTML = '';
-            document.getElementById('interests-input').value = '';
-            document.getElementById('region-select').value = '';
-            document.getElementById('num-recommendations').value = '5';
-            
-            document.getElementById('results-section').classList.add('hidden');
-            document.getElementById('error-section').classList.add('hidden');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+// Event Listeners
+function initializeEventListeners() {
+    const form = document.getElementById('recommendationForm');
+    if (form) {
+        form.addEventListener('submit', handleRecommendationSubmit);
     }
+}
 
-    // Initialize app
-    const app = new SENARecommendationApp();
+// Manejo del envío del formulario de recomendaciones
+async function handleRecommendationSubmit(event) {
+    event.preventDefault();
+    
+    const formData = {
+        occupation: document.getElementById('occupation').value,
+        experience_level: document.getElementById('experience').value,
+        interests: document.getElementById('interests').value,
+        user_id: document.getElementById('userId').value || null
+    };
+    
+    // Validación básica
+    if (!formData.occupation || !formData.interests || !formData.experience_level) {
+        showNotification('Por favor completa todos los campos requeridos', 'error');
+        return;
+    }
+    
+    await getRecommendations(formData);
+}
 
-    // Add some sample interests for demo
-    setTimeout(() => {
-        const sampleInterests = ['programación', 'tecnología'];
-        sampleInterests.forEach(interest => {
-            app.addInterest(interest);
+// Obtener recomendaciones del servidor
+async function getRecommendations(formData) {
+    showLoading(true);
+    hideResults();
+    
+    try {
+        const response = await fetch('/api/recommend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
         });
-    }, 1000);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error en el servidor');
+        }
+        
+        const data = await response.json();
+        currentRecommendations = data;
+        
+        displayRecommendations(data);
+        showNotification('¡Recomendaciones generadas exitosamente!', 'success');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(`Error al obtener recomendaciones: ${error.message}`, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Mostrar todas las categorías de cursos
+async function showAllCourses() {
+    showLoading(true);
+    hideResults();
+    
+    try {
+        if (allCourses.length === 0) {
+            await loadAllCourses();
+        }
+        
+        displayAllCourses(allCourses);
+        showNotification('Catálogo completo cargado', 'info');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al cargar el catálogo', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Cargar todos los cursos desde el servidor
+async function loadAllCourses() {
+    try {
+        const response = await fetch('/api/courses');
+        if (!response.ok) {
+            throw new Error('Error al cargar cursos');
+        }
+        allCourses = await response.json();
+    } catch (error) {
+        console.error('Error cargando cursos:', error);
+        throw error;
+    }
+}
+
+// Filtrar por categoría específica
+async function filterByCategory(category) {
+    showLoading(true);
+    hideResults();
+    
+    try {
+        if (allCourses.length === 0) {
+            await loadAllCourses();
+        }
+        
+        const filteredCourses = allCourses.filter(course => course.category === category);
+        displayFilteredCourses(filteredCourses, category);
+        showNotification(`Mostrando cursos de ${category}`, 'info');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al filtrar cursos', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Mostrar recomendaciones
+function displayRecommendations(data) {
+    // Mostrar secciones relevantes
+    document.getElementById('contentBasedSection').classList.remove('hidden');
+    document.getElementById('collaborativeSection').classList.toggle('hidden', !data.collaborative || data.collaborative.length === 0);
+    document.getElementById('catalogSection').classList.add('hidden');
+    
+    // Mostrar recomendaciones basadas en contenido
+    if (data.content_based && data.content_based.length > 0) {
+        displayCourseGrid('contentBasedResults', data.content_based, 'content');
+    }
+    
+    // Mostrar recomendaciones colaborativas si existen
+    if (data.collaborative && data.collaborative.length > 0) {
+        displayCourseGrid('collaborativeResults', data.collaborative, 'collaborative');
+    }
+    
+    showResults();
+}
+
+// Mostrar todos los cursos
+function displayAllCourses(courses) {
+    document.getElementById('contentBasedSection').classList.add('hidden');
+    document.getElementById('collaborativeSection').classList.add('hidden');
+    document.getElementById('catalogSection').classList.remove('hidden');
+    
+    displayCourseGrid('catalogResults', courses, 'catalog');
+    showResults();
+}
+
+// Mostrar cursos filtrados por categoría
+function displayFilteredCourses(courses, category) {
+    document.getElementById('contentBasedSection').classList.add('hidden');
+    document.getElementById('collaborativeSection').classList.add('hidden');
+    document.getElementById('catalogSection').classList.remove('hidden');
+    
+    // Actualizar título de la sección
+    const titleElement = document.querySelector('#catalogSection h3');
+    titleElement.innerHTML = `📖 Cursos de ${category}`;
+    
+    displayCourseGrid('catalogResults', courses, 'filtered');
+    showResults();
+}
+
+// Crear grid de cursos
+function displayCourseGrid(containerId, courses, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (!courses || courses.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">🤔</div>
+                <h4 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron cursos</h4>
+                <p class="text-gray-500">Intenta ajustar tus criterios de búsqueda</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = courses.map(course => createCourseCard(course, type)).join('');
+    
+    // Agregar animación de entrada con delay
+    const cards = container.querySelectorAll('.course-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('animate-slide-up');
+    });
+}
+
+// Crear tarjeta de curso individual
+function createCourseCard(course, type) {
+    const categoryColors = {
+        'Energía': 'from-green-500 to-emerald-600',
+        'IA': 'from-blue-500 to-indigo-600',
+        'Tecnología': 'from-purple-500 to-violet-600'
+    };
+    
+    const levelIcons = {
+        'Principiante': '🌱',
+        'Intermedio': '🚀',
+        'Avanzado': '⭐'
+    };
+    
+    const categoryColor = categoryColors[course.category] || 'from-gray-500 to-gray-600';
+    const levelIcon = levelIcons[course.level] || '📚';
+    
+    // Información específica según el tipo
+    let scoreInfo = '';
+    let scoreClass = '';
+    
+    if (type === 'content' && course.similarity_score !== undefined) {
+        const percentage = Math.round(course.similarity_score * 100);
+        scoreInfo = `
+            <div class="flex items-center space-x-2 text-sm">
+                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span class="text-purple-700 font-semibold">Similitud: ${percentage}%</span>
+            </div>
+        `;
+        scoreClass = 'border-l-4 border-purple-500';
+    } else if (type === 'collaborative' && course.predicted_rating !== undefined) {
+        const stars = '★'.repeat(Math.round(course.predicted_rating));
+        scoreInfo = `
+            <div class="flex items-center space-x-2 text-sm">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="text-green-700 font-semibold">Predicción: ${course.predicted_rating}/5</span>
+            </div>
+        `;
+        scoreClass = 'border-l-4 border-green-500';
+    }
+    
+    return `
+        <div class="course-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden ${scoreClass}">
+            <!-- Header con gradiente -->
+            <div class="bg-gradient-to-r ${categoryColor} p-4 text-white">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold bg-white/20 px-2 py-1 rounded-full">${course.category}</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-yellow-300">⭐</span>
+                        <span class="text-sm font-bold">${course.rating}</span>
+                    </div>
+                </div>
+                <h4 class="font-bold text-lg leading-tight">${course.title}</h4>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="p-6 space-y-4">
+                <!-- Meta información -->
+                <div class="flex flex-wrap gap-2">
+                    <span class="inline-flex items-center space-x-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                        <span>${levelIcon}</span>
+                        <span>${course.level}</span>
+                    </span>
+                    <span class="inline-flex items-center space-x-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                        <span>⏱️</span>
+                        <span>${course.duration_hours}h</span>
+                    </span>
+                </div>
+                
+                <!-- Descripción -->
+                <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">${course.description}</p>
+                
+                <!-- Habilidades -->
+                ${course.skills ? `
+                    <div class="space-y-2">
+                        <h5 class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Habilidades</h5>
+                        <div class="flex flex-wrap gap-1">
+                            ${course.skills.split(', ').slice(0, 3).map(skill => 
+                                `<span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-medium">${skill.trim()}</span>`
+                            ).join('')}
+                            ${course.skills.split(', ').length > 3 ? '<span class="text-gray-500 text-xs">...</span>' : ''}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <!-- Score información -->
+                ${scoreInfo}
+            </div>
+            
+            <!-- Footer con acción -->
+            <div class="px-6 pb-6">
+                <button onclick="showCourseDetails(${course.course_id})" 
+                        class="w-full bg-gradient-to-r ${categoryColor} text-white py-3 rounded-lg font-semibold hover:opacity-90 transform hover:scale-105 transition-all duration-200">
+                    Ver Detalles
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Mostrar detalles del curso
+function showCourseDetails(courseId) {
+    const course = allCourses.find(c => c.course_id === courseId) || 
+                   (currentRecommendations?.content_based?.find(c => c.course_id === courseId)) ||
+                   (currentRecommendations?.collaborative?.find(c => c.course_id === courseId));
+    
+    if (!course) {
+        showNotification('No se pudo cargar la información del curso', 'error');
+        return;
+    }
+    
+    // Crear modal con detalles
+    const modalHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="closeModal(event)">
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="p-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 pr-4">${course.title}</h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap gap-3">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                ${course.category}
+                            </span>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                ${course.level}
+                            </span>
+                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                                ${course.duration_hours} horas
+                            </span>
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                ⭐ ${course.rating}
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Descripción</h3>
+                            <p class="text-gray-600 leading-relaxed">${course.description}</p>
+                        </div>
+                        
+                        ${course.skills ? `
+                            <div>
+                                <h3 class="font-semibold text-gray-800 mb-3">Habilidades que desarrollarás</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    ${course.skills.split(', ').map(skill => 
+                                        `<span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">${skill.trim()}</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="pt-4 border-t">
+                            <button onclick="enrollCourse(${course.course_id})" 
+                                    class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200">
+                                📚 Inscribirse al Curso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Cerrar modal
+function closeModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Simular inscripción a curso
+function enrollCourse(courseId) {
+    showNotification('¡Funcionalidad de inscripción próximamente!', 'info');
+    closeModal();
+}
+
+// Utilidades para mostrar/ocultar elementos
+function showLoading(show) {
+    const loading = document.getElementById('loading');
+    if (loading) {
+        loading.classList.toggle('hidden', !show);
+    }
+}
+
+function showResults() {
+    const results = document.getElementById('results');
+    if (results) {
+        results.classList.remove('hidden');
+        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function hideResults() {
+    const results = document.getElementById('results');
+    if (results) {
+        results.classList.add('hidden');
+    }
+}
+
+// Sistema de notificaciones
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+    };
+    
+    const icons = {
+        success: '✓',
+        error: '✗',
+        info: 'ℹ',
+        warning: '⚠'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+    notification.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <span class="text-xl">${icons[type]}</span>
+            <span class="font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
+}
+
+// Utility para truncar texto
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+// Agregar estilos CSS adicionales al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .course-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .course-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .course-card:hover {
+                transform: none;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+});
