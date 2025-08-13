@@ -152,9 +152,19 @@ def login():
 
     for usuario in usuarios:
         if usuario['idUsuario'] == id_usuario and usuario['contraseña'] == contrasena:
-            return jsonify({"success": True, "user": usuario})
+            # Usuario autenticado → logueado = 1
+            return jsonify({
+                "success": True,
+                "user": usuario,
+                "logueado": 1
+            })
 
-    return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+    # Credenciales incorrectas → logueado = 0
+    return jsonify({
+        "success": False,
+        "error": "Credenciales inválidas",
+        "logueado": 0
+    }), 401
 
 
 @app.route("/usuarios", methods=["GET"])

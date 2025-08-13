@@ -100,33 +100,29 @@
                 // Attempt login
                 const result = await loginManager.authenticate(credentials);
                 
-                if (result.success) {
-                    showMessage(false, '¡Inicio de sesión exitoso! Redirigiendo...');
-                    
-                    // Store token if remember me is checked
-                    if (credentials.remember) {
-                        localStorage.setItem('nexus_token', result.token);
-                        localStorage.setItem('nexus_user', JSON.stringify(result.user));
-                    } else {
-                        sessionStorage.setItem('nexus_token', result.token);
-                        sessionStorage.setItem('nexus_user', JSON.stringify(result.user));
-                    }
-                    
-                    // Redirect after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = '/Index.html'; // Cambiar por tu URL de dashboard
-                    }, 2000);
-                } else {
-                    showMessage(true, 'Error en las credenciales. Inténtalo de nuevo.');
-                }
-            } catch (error) {
-                showMessage(true, error.message || 'Error de conexión. Inténtalo más tarde.');
-            } finally {
-                // Reset button state
-                buttonText.textContent = 'Iniciar Sesión';
-                loadingIcon.classList.add('hidden');
-            }
-        });
+                 if (result.success && result.logueado === 1) {
+            showMessage(false, '¡Inicio de sesión exitoso! Redirigiendo...');
+
+            // Guardar usuario temporalmente en sessionStorage (se borra al cerrar pestaña)
+            sessionStorage.setItem('nexus_user', JSON.stringify(result.user));
+            sessionStorage.setItem('logueado', result.logueado);
+
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+                window.location.href = '/Index.html';
+            }, 2000);
+
+        } else {
+            showMessage(true, 'Credenciales incorrectas o usuario no logueado.');
+        }
+
+    } catch (error) {
+        showMessage(true, error.message || 'Error de conexión. Inténtalo más tarde.');
+    } finally {
+        buttonText.textContent = 'Iniciar Sesión';
+        loadingIcon.classList.add('hidden');
+    }
+});
 
         // Check if user is already logged in
         window.addEventListener('load', function() {
