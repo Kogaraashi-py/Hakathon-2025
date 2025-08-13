@@ -1,4 +1,4 @@
-# app.py (reemplaza el contenido actual)
+
 import os, json, logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
