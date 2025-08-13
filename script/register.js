@@ -118,8 +118,50 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         return;
     }
     
-    // Simular registro exitoso
-    alert('¡Cuenta creada exitosamente! Redirigiendo al login...');
+    // Registro:
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!validatePasswords()) {
+        alert('Las contraseñas no coinciden');
+        return;
+    }
+    
+    if (!document.getElementById('terms').checked) {
+        alert('Debes aceptar los términos y condiciones');
+        return;
+    }
+
+    // Recolectar datos del formulario
+    const formData = {
+        nombre: document.getElementById('fullName').value,
+        idUsuario: document.getElementById('username').value, // coincide con main.py
+        contraseña: document.getElementById('password').value,
+        perfil: {
+            email: document.getElementById('email').value,
+            newsletter: document.getElementById('newsletter').checked
+        }
+    };
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('¡Cuenta creada exitosamente! Redirigiendo al login...');
+            window.location.href = '/login.html'; // Ajusta la ruta según tu proyecto
+        } else {
+            alert(data.error || 'Error al registrar usuario');
+        }
+    } catch (err) {
+        alert('Error de conexión con el servidor');
+    }
+});
     
     // Recolectar datos del formulario
     const formData = {

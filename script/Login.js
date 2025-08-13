@@ -1,7 +1,8 @@
 // Import Login functionality (simulated)
+
         class LoginManager {
             constructor() {
-                this.apiUrl = '/api/login'; // URL de tu API
+                this.apiUrl = 'http://127.0.0.1:5000/login'; // URL de tu API
             }
 
             async authenticate(credentials) {
@@ -21,27 +22,7 @@
 
                     const data = await response.json();
                     return data;
-                } catch (error) {
-                    // Simulación para demo - remover en producción
-                    console.log('Simulating login for demo purposes');
-                    
-                    // Simular validación básica para demo
-                    if (credentials.username === 'admin' && credentials.password === 'admin123') {
-                        return { 
-                            success: true, 
-                            user: { username: credentials.username, name: 'Administrador' },
-                            token: 'demo-token-123'
-                        };
-                    } else if (credentials.username === 'usuario' && credentials.password === '123456') {
-                        return { 
-                            success: true, 
-                            user: { username: credentials.username, name: 'Usuario Demo' },
-                            token: 'demo-token-456'
-                        };
-                    } else {
-                        throw new Error('Nombre de usuario o contraseña incorrectos');
-                    }
-                }
+                } 
             }
         }
 
