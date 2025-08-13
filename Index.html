@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CursoLink - Tu Puerta de Acceso a la Educación Técnica</title>
+    <link rel="stylesheet" href="style/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,88 +25,6 @@
             }
         }
     </script>
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes bounceGentle {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-10px) rotate(1deg); }
-            66% { transform: translateY(5px) rotate(-1deg); }
-        }
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        }
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card-hover:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-        .nav-link {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover {
-            color: #fbbf24;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 50%;
-            background: linear-gradient(90deg, #fbbf24, #f59e0b);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        .institution-card {
-            transition: all 0.3s ease;
-            filter: grayscale(20%);
-        }
-        .institution-card:hover {
-            filter: grayscale(0%);
-            transform: scale(1.05);
-        }
-        .course-platform {
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .course-platform:hover {
-            border-left-color: #6366f1;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
-        }
-        #loginSection {
-            transform: translateX(100%);
-            transition: transform 0.4s ease;
-        }
-        #loginSection.show {
-            transform: translateX(0);
-        }
-        .quiz-modal {
-            backdrop-filter: blur(8px);
-            background: rgba(0, 0, 0, 0.7);
-        }
-    </style>
 </head>
 <body class="min-h-screen gradient-bg">
     <!-- Navegación Superior -->
@@ -114,11 +33,11 @@
             <!-- Logo -->
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                    <span class="text-2xl">🎓</span>
+                    <img src="resource/ChatGPT Image 13 ago 2025, 10_34_00 a.m..png" alt="logo DAOT">
                 </div>
                 <div class="text-white">
-                    <h1 class="text-xl font-bold">CursoLink</h1>
-                    <p class="text-xs opacity-80">Tu conexión educativa</p>
+                    <h1 class="text-xl font-bold">NEXUS</h1>
+                    <p class="text-xs opacity-80">Tu camino hacia la revolución tecnológica</p>
                 </div>
             </div>
             
@@ -134,9 +53,9 @@
             </div>
             
             <!-- Botón Iniciar Sesión -->
-            <button onclick="toggleLogin()" class="bg-white/20 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-all">
+            <a href="page/Login.html" class="bg-white/20 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-all">
                 Iniciar Sesión
-            </button>
+            </a>
         </div>
     </nav>
 
