@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+
 import json, os
 
 app = Flask(__name__)
-
+from flask_cors import CORS
+CORS(app)
 # --------------------------
 # ARCHIVOS JSON
 # --------------------------
@@ -139,19 +141,21 @@ def registrar_usuario():
 
     return jsonify({"mensaje": "Usuario registrado con éxito", "usuario": nuevo_usuario}), 201
 
-@app.route("/login", methods=["POST"])
+@app.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    idUsuario = data.get("idUsuario")
-    contraseña = data.get("contraseña")
+    data = request.get_json()
+    id_usuario = data.get('idUsuario')
+    contrasena = data.get('contraseña')
 
-    usuarios = cargar_usuarios()
-    usuario = next((u for u in usuarios if u["idUsuario"] == idUsuario and u["contraseña"] == contraseña), None)
+    with open('usuarios.json', 'r', encoding='utf-8') as f:
+        usuarios = json.load(f)
 
-    if usuario:
-        return jsonify({"mensaje": "Login exitoso", "usuario": usuario}), 200
-    else:
-        return jsonify({"error": "Credenciales incorrectas"}), 401
+    for usuario in usuarios:
+        if usuario['idUsuario'] == id_usuario and usuario['contraseña'] == contrasena:
+            return jsonify({"success": True, "user": usuario})
+
+    return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+
 
 @app.route("/usuarios", methods=["GET"])
 def listar_usuarios():

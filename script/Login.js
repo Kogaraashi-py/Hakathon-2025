@@ -91,8 +91,8 @@
             // Get form data
             const formData = new FormData(loginForm);
             const credentials = {
-                username: formData.get('username'),
-                password: formData.get('password'),
+                idUsuario: formData.get('username'),
+                contraseña: formData.get('password'),
                 remember: formData.get('remember') ? true : false
             };
 

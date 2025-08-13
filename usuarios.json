@@ -1,0 +1,11 @@
+[
+    {
+        "nombre": "Ruben Otniel Gutiérrez Carreño",
+        "idUsuario": "rogutierrez",
+        "contraseña": "123456",
+        "perfil": {
+            "email": "bennielrrezno@gmail.com",
+            "newsletter": true
+        }
+    }
+]
