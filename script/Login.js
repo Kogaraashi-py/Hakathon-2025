@@ -22,7 +22,10 @@
 
                     const data = await response.json();
                     return data;
-                } 
+                } catch (error) {
+            console.error('Error en login:', error);
+            throw error; // Para que el código que llame a authenticate pueda manejarlo
+        }
             }
         }
 
